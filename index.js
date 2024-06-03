@@ -37,8 +37,19 @@ const Database = client.db("AppertmentDB");
 const appertmentsCollection = Database.collection("appertments");
 
 app.get("/appertments", async (req, res) => {
-  const appertments = await appertmentsCollection.find().toArray();
+  const page = parseInt(req.query.page) - 1;
+  const size = parseInt(req.query.size);
+  const appertments = await appertmentsCollection
+    .find()
+    .skip(page * size)
+    .limit(size)
+    .toArray();
   res.json(appertments);
+});
+
+app.get("/appertments-count", async (req, res) => {
+  const count = await appertmentsCollection.estimatedDocumentCount();
+  res.json(count);
 });
 
 app.get("/", (req, res) => {
