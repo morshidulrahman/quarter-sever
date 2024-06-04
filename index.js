@@ -36,6 +36,7 @@ dbConnect();
 const Database = client.db("AppertmentDB");
 const appertmentsCollection = Database.collection("appertments");
 const usersCollection = Database.collection("users");
+const agrementsCollection = Database.collection("agrementlists");
 
 app.get("/appertments", async (req, res) => {
   const page = parseInt(req.query.page) - 1;
@@ -72,6 +73,19 @@ app.put("/users", async (req, res) => {
 app.get("/appertments-count", async (req, res) => {
   const count = await appertmentsCollection.estimatedDocumentCount();
   res.json(count);
+});
+
+app.post("/agreementlists", async (req, res) => {
+  const agreementlists = req.body;
+  const result = await agrementsCollection.insertOne(agreementlists);
+  res.json(result);
+});
+
+app.get("/agreementlists/:email", async (req, res) => {
+  const email = req.params.email;
+  const query = { email: email };
+  const result = await agrementsCollection.findOne(query);
+  res.send(result);
 });
 
 app.get("/", (req, res) => {
