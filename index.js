@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const PORT = process.env.PORT || 5000;
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 app.use(express.json());
 
@@ -70,6 +70,21 @@ app.put("/users", async (req, res) => {
   res.send(result);
 });
 
+app.patch("/agements-user/:email", async (req, res) => {
+  const email = req.params.email;
+  const user = req.body;
+  const query = { email };
+  const updateDoc = {
+    $set: {
+      ...user,
+      timestamp: Date.now(),
+    },
+  };
+  const deletedoc = await agrementsCollection.deleteOne(query);
+  const result = await usersCollection.updateOne(query, updateDoc);
+  res.send(result);
+});
+
 app.get("/appertments-count", async (req, res) => {
   const count = await appertmentsCollection.estimatedDocumentCount();
   res.json(count);
@@ -78,6 +93,11 @@ app.get("/appertments-count", async (req, res) => {
 app.post("/agreementlists", async (req, res) => {
   const agreementlists = req.body;
   const result = await agrementsCollection.insertOne(agreementlists);
+  res.json(result);
+});
+
+app.get("/agreementlists", async (req, res) => {
+  const result = await agrementsCollection.find().toArray();
   res.json(result);
 });
 
