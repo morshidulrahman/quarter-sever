@@ -37,6 +37,7 @@ const Database = client.db("AppertmentDB");
 const appertmentsCollection = Database.collection("appertments");
 const usersCollection = Database.collection("users");
 const agrementsCollection = Database.collection("agrementlists");
+const membersCollection = Database.collection("membersInfo");
 
 app.get("/appertments", async (req, res) => {
   const page = parseInt(req.query.page) - 1;
@@ -70,6 +71,33 @@ app.put("/users", async (req, res) => {
   res.send(result);
 });
 
+app.post("/membersinfo", async (req, res) => {
+  const membersinfo = req.body;
+  const result = await membersCollection.insertOne(membersinfo);
+  res.send(result);
+});
+
+app.get("/members", async (req, res) => {
+  const result = await membersCollection.find().toArray();
+  res.send(result);
+});
+
+app.delete("/member/:email", async (req, res) => {
+  const email = req.params.email;
+  const query = { email };
+  const updateDoc = {
+    $set: {
+      role: "user",
+      timestamp: Date.now(),
+    },
+  };
+
+  const userresult = await usersCollection.updateOne(query, updateDoc);
+  const result = await membersCollection.deleteOne(query);
+  res.send(result);
+});
+
+// update user status by admin
 app.patch("/agements-user/:email", async (req, res) => {
   const email = req.params.email;
   const user = req.body;
