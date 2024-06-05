@@ -39,6 +39,7 @@ const usersCollection = Database.collection("users");
 const agrementsCollection = Database.collection("agrementlists");
 const membersCollection = Database.collection("membersInfo");
 const announceCollection = Database.collection("announcements");
+const CupponsCollection = Database.collection("cuppons");
 
 app.get("/appertments", async (req, res) => {
   const page = parseInt(req.query.page) - 1;
@@ -104,6 +105,16 @@ app.post("/announcements", async (req, res) => {
   res.send(result);
 });
 
+app.post("/cupon-codes", async (req, res) => {
+  const cuppons = req.body;
+  const result = await CupponsCollection.insertOne(cuppons);
+  res.send(result);
+});
+
+app.get("/cupon-codes", async (req, res) => {
+  const result = await CupponsCollection.find().toArray();
+  res.send(result);
+});
 // update user status by admin
 app.patch("/agements-user/:email", async (req, res) => {
   const email = req.params.email;
