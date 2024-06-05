@@ -90,6 +90,12 @@ app.get("/members", async (req, res) => {
   const result = await membersCollection.find().toArray();
   res.send(result);
 });
+app.get("/member/:email", async (req, res) => {
+  const email = req.params.email;
+  const query = { email };
+  const result = await membersCollection.findOne(query);
+  res.send(result);
+});
 
 app.delete("/member/:email", async (req, res) => {
   const email = req.params.email;
