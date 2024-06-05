@@ -38,6 +38,7 @@ const appertmentsCollection = Database.collection("appertments");
 const usersCollection = Database.collection("users");
 const agrementsCollection = Database.collection("agrementlists");
 const membersCollection = Database.collection("membersInfo");
+const announceCollection = Database.collection("announcements");
 
 app.get("/appertments", async (req, res) => {
   const page = parseInt(req.query.page) - 1;
@@ -94,6 +95,12 @@ app.delete("/member/:email", async (req, res) => {
 
   const userresult = await usersCollection.updateOne(query, updateDoc);
   const result = await membersCollection.deleteOne(query);
+  res.send(result);
+});
+
+app.post("/announcements", async (req, res) => {
+  const announcement = req.body;
+  const result = await announceCollection.insertOne(announcement);
   res.send(result);
 });
 
