@@ -73,6 +73,13 @@ app.put("/users", async (req, res) => {
   res.send(result);
 });
 
+app.get("/users/:email", async (req, res) => {
+  const email = req.params.email;
+  const query = { email };
+  const result = await usersCollection.findOne(query);
+  res.send(result);
+});
+
 app.post("/membersinfo", async (req, res) => {
   const membersinfo = req.body;
   const result = await membersCollection.insertOne(membersinfo);
@@ -102,6 +109,11 @@ app.delete("/member/:email", async (req, res) => {
 app.post("/announcements", async (req, res) => {
   const announcement = req.body;
   const result = await announceCollection.insertOne(announcement);
+  res.send(result);
+});
+
+app.get("/announcements", async (req, res) => {
+  const result = await announceCollection.find().toArray();
   res.send(result);
 });
 
