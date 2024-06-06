@@ -3,6 +3,7 @@ const cors = require("cors");
 require("dotenv").config();
 const PORT = process.env.PORT || 5000;
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const app = express();
 app.use(express.json());
 
@@ -40,6 +41,7 @@ const agrementsCollection = Database.collection("agrementlists");
 const membersCollection = Database.collection("membersInfo");
 const announceCollection = Database.collection("announcements");
 const CupponsCollection = Database.collection("cuppons");
+const paymentCollection = Database.collection("Payments");
 
 app.get("/appertments", async (req, res) => {
   const page = parseInt(req.query.page) - 1;
@@ -133,6 +135,14 @@ app.get("/cupon-codes", async (req, res) => {
   const result = await CupponsCollection.find().toArray();
   res.send(result);
 });
+
+app.get("/cupon-codes/:code", async (req, res) => {
+  const code = req.params.code;
+  const query = { code };
+  const result = await CupponsCollection.findOne(query);
+  res.send(result);
+});
+
 // update user status by admin
 app.patch("/agements-user/:email", async (req, res) => {
   const email = req.params.email;
@@ -170,6 +180,28 @@ app.get("/agreementlists/:email", async (req, res) => {
   const query = { email: email };
   const result = await agrementsCollection.findOne(query);
   res.send(result);
+});
+
+// payment intent
+app.post("/create-payment-intent", async (req, res) => {
+  const { price } = req.body;
+  const amount = parseInt(price * 100);
+
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: amount,
+    currency: "usd",
+    payment_method_types: ["card"],
+  });
+
+  res.send({
+    clientSecret: paymentIntent.client_secret,
+  });
+});
+
+app.post("/payments", async (req, res) => {
+  const payment = req.body;
+  const paymentResult = await paymentCollection.insertOne(payment);
+  res.send(paymentResult);
 });
 
 app.get("/", (req, res) => {
