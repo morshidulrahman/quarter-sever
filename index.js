@@ -173,6 +173,24 @@ app.get("/cupon-codes", async (req, res) => {
   const result = await CupponsCollection.find().toArray();
   res.send(result);
 });
+app.get("/cupon/:id", async (req, res) => {
+  const id = req.params.id;
+  const query = { _id: new ObjectId(id) };
+  const result = await CupponsCollection.findOne(query);
+  res.send(result);
+});
+app.put("/cupon/:id", async (req, res) => {
+  const cupon = req.body;
+  const id = req.params.id;
+  const query = { _id: new ObjectId(id) };
+  const updateDoc = {
+    $set: {
+      ...cupon,
+    },
+  };
+  const result = await CupponsCollection.updateOne(query, updateDoc);
+  res.send(result);
+});
 
 app.get("/cupon-codes/:code", async (req, res) => {
   const code = req.params.code;
@@ -239,11 +257,17 @@ app.post("/create-payment-intent", async (req, res) => {
 app.post("/payments", async (req, res) => {
   const payment = req.body;
   const paymentResult = await paymentCollection.insertOne(payment);
+  const Result = await paymentInfoCollection.deleteMany();
   res.send(paymentResult);
 });
 app.get("/payments/:email", async (req, res) => {
   const email = req.params.email;
-  const paymentResult = await paymentCollection.find({ email }).toArray();
+  const month = req.query.month;
+  const query = { email };
+  if (month) {
+    query.date = month;
+  }
+  const paymentResult = await paymentCollection.find(query).toArray();
   res.send(paymentResult);
 });
 
