@@ -42,6 +42,7 @@ const membersCollection = Database.collection("membersInfo");
 const announceCollection = Database.collection("announcements");
 const CupponsCollection = Database.collection("cuppons");
 const paymentCollection = Database.collection("Payments");
+const paymentInfoCollection = Database.collection("Paymentinfo");
 
 app.get("/appertments", async (req, res) => {
   const page = parseInt(req.query.page) - 1;
@@ -73,6 +74,43 @@ app.put("/users", async (req, res) => {
   };
   const result = await usersCollection.updateOne(query, updateDoc, options);
   res.send(result);
+});
+app.get("/admin-stats", async (req, res) => {
+  const query = { role: "user" };
+  const member = { role: "member" };
+  const Totaluser = await usersCollection.countDocuments(query);
+  const Totalmember = await usersCollection.countDocuments(member);
+  const result = await appertmentsCollection
+    .aggregate([
+      {
+        $group: {
+          _id: null,
+          TotalRooms: { $sum: "$apartmentNo" },
+        },
+      },
+    ])
+    .toArray();
+  const TotalRooms = result.length > 0 ? result[0].TotalRooms : 0;
+
+  const agrement = await membersCollection
+    .aggregate([
+      {
+        $group: {
+          _id: null,
+          Totalagrements: { $sum: "$apartmentNo" },
+        },
+      },
+    ])
+    .toArray();
+  const Totalagrements = agrement.length > 0 ? agrement[0].Totalagrements : 0;
+  const aviablerooms = TotalRooms - Totalagrements;
+  res.send({
+    users: Totaluser,
+    members: Totalmember,
+    rooms: TotalRooms,
+    agrement: Totalagrements,
+    aviablerooms: aviablerooms,
+  });
 });
 
 app.get("/users/:email", async (req, res) => {
@@ -202,6 +240,24 @@ app.post("/payments", async (req, res) => {
   const payment = req.body;
   const paymentResult = await paymentCollection.insertOne(payment);
   res.send(paymentResult);
+});
+app.get("/payments/:email", async (req, res) => {
+  const email = req.params.email;
+  const paymentResult = await paymentCollection.find({ email }).toArray();
+  res.send(paymentResult);
+});
+
+app.post("/payments-info", async (req, res) => {
+  const payment = req.body;
+  const paymentResult = await paymentInfoCollection.insertOne(payment);
+  res.send(paymentResult);
+});
+
+app.get("/payments-info/:email", async (req, res) => {
+  const email = req.params.email;
+  const query = { email };
+  const result = await paymentInfoCollection.findOne(query);
+  res.send(result);
 });
 
 app.get("/", (req, res) => {
